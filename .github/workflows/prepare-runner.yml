@@ -22,10 +22,12 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Install unzip
+        run: sudo apt-get install -y unzip
       - name: Download voice corpora
         run: |
-          [ ! -d data/alfur ] && wget -nv -O alfur.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/alfur.zip
-          [ ! -d data/dilja ] && wget -nv -O dilja.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/dilja.zip
+          [ ! -d data/alfur -o ! -f alfur.zip ] && wget -nv -O alfur.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/alfur.zip
+          [ ! -d data/dilja -o ! -f alfur.zip ] && wget -nv -O dilja.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/dilja.zip
           [ ! -d data ] && mkdir data
           [ ! -d data/alfur ] && unzip -q alfur.zip -d data/alfur
           [ ! -d data/dilja ] && unzip -q dilja.zip -d data/dilja
