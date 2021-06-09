@@ -1,0 +1,47 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the G-Thor-fix-clunit-names branch
+  push:
+    branches: [ G-Thor-fix-clunit-names ]
+  pull_request:
+    branches: [ G-Thor-fix-clunit-names ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Download voice corpora
+        run: |
+          [ ! -d data/alfur ] && wget https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/alfur.zip
+          [ ! -d data/dilja ] && wget https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/dilja.zip
+          [ ! -d data] && mkdir data
+          [ ! -d data/alfur] && unzip alfur.zip -d data/alfur
+          [ ! -d data/dilja] && unzip dilja.zip -d data/dilja
+          [ ! -f alfur.zip ] && rm -f alfur.zip
+          [ ! -f dilja.zip ] && rm -f dilja.zip
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          ls ~/data/alfur/audio | head
+          ls ~/data/dilja/audio | head
+          echo test, and deploy your project.
