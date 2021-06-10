@@ -27,17 +27,17 @@ jobs:
         id: cache-corpora
         with:
           path: |
-            data/alfur
-            data/dilja
+            ~/data/alfur
+            ~/data/dilja
           key: ${{ runner.os }}-corpora
       - name: Download voice corpora
         if: steps.cache-corpora.outputs.cache-hit != 'true'
         run: |
           [ ! -d data/alfur -o ! -f alfur.zip ] && wget -nv -O alfur.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/alfur.zip
           [ ! -d data/dilja -o ! -f alfur.zip ] && wget -nv -O dilja.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/dilja.zip
-          [ ! -d data ] && mkdir data
-          [ ! -d data/alfur ] && unzip -q alfur.zip -d data/alfur
-          [ ! -d data/dilja ] && unzip -q dilja.zip -d data/dilja
+          [ ! -d data ] && mkdir ~/data
+          [ ! -d data/alfur ] && unzip -q alfur.zip -d ~/data/alfur
+          [ ! -d data/dilja ] && unzip -q dilja.zip -d ~/data/dilja
           [ -f alfur.zip ] && rm -f alfur.zip
           [ -f dilja.zip ] && rm -f dilja.zip
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
