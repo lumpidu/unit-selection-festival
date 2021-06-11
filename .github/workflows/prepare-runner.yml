@@ -3,54 +3,173 @@
 name: CI
 
 # Controls when the action will run. 
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+on: [push, pull_request]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+  # This job prepares the Docker container
+  setup:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: 'Build container'
+        run: |
+          cd $GITHUB_WORKSPACE
+          docker build . --tag lvl-us-is-train -f train.Dockerfile
+          if [ ! -d outputs ]; then mkdir outputs; fi
+      - name: 'Spin up the container'
+        run: |
+          cd $GITHUB_WORKSPACE
+          docker run -d \
+            --name voice_builder \
+            -v speech-corpora:/usr/local/src/ext/data \
+            -v voice-alfur:/usr/local/src/voice_alfur \
+            -v voice-dilja:/usr/local/src/voice_dilja \
+            -v $GITHUB_WORKSPACE/outputs:/outputs \
+            -v $GITHUB_WORKSPACE/voice:/usr/local/src/voice \
+            lvl-us-is-train:latest \
+            bash -c "tail -f /dev/null"
+  dependencies:
+    runs-on: self-hosted
+    needs: setup
+    steps:
+      - name: Update g2p
+        run: |
+          docker exec voice_builder bash -c "if [ -d /app/fairseq_g2p ]; then cd /app/fairseq_g2p; git pull; else exit 1; fi"
+      - name: Download data
+        run: |
+          docker exec voice_builder ./docker_scripts/download_data.sh /usr/local/src/ext/data alfur
+          docker exec voice_builder ./docker_scripts/download_data.sh /usr/local/src/ext/data dilja
+      - name: Set up voice dirs
+        run: |
+          docker exec voice_builder ./docker_scripts/setup_voices.sh /usr/local/src/voice_alfur
+          docker exec voice_builder ./docker_scripts/setup_voices.sh /usr/local/src/voice_dilja
+  # This job builds the voices
+  build-alfur:
     # The type of runner that the job will run on
     runs-on: self-hosted
-
+    needs: dependencies
+    timeout-minutes: 1200
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Cache voice corpora
-        uses: actions/cache@v2
-        id: cache-corpora
+      - name: 'Train Alfur'
+        run: |
+          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 2000
+          docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
+          docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_alfur
+      - name: 'Collect test utterances for Alfur'
+        uses: actions/upload-artifact@v2
         with:
+          name: test-utterances-alfur
           path: |
-            ~/data/alfur
-            ~/data/dilja
-          key: ${{ runner.os }}-corpora
-      - name: Download voice corpora
-        if: steps.cache-corpora.outputs.cache-hit != 'true'
+            outputs/voice_alfur/grapheme/*.wav
+  convert-grapheme-alfur:
+    runs-on: self-hosted
+    needs: build-alfur
+    timeout-minutes: 1200
+    steps:
+      - name: 'Convert Alfur to .flitevox'
         run: |
-          [ ! -d data/alfur -o ! -f alfur.zip ] && wget -nv -O alfur.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/alfur.zip
-          [ ! -d data/dilja -o ! -f alfur.zip ] && wget -nv -O dilja.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/dilja.zip
-          [ ! -d data ] && mkdir ~/data
-          [ ! -d data/alfur ] && unzip -q alfur.zip -d ~/data/alfur
-          [ ! -d data/dilja ] && unzip -q dilja.zip -d ~/data/dilja
-          [ -f alfur.zip ] && rm -f alfur.zip
-          [ -f dilja.zip ] && rm -f dilja.zip
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+          docker exec voice_builder ./docker_scripts/convert_grapheme_to_flite.sh /usr/local/src/voice_alfur
+      - name: 'Collect .flitevox model for Alfur'
+        uses: actions/upload-artifact@v2
+        with:
+          name: flitevox-model-alfur
+          path: |
+            outputs/voice_alfur/grapheme/*.flitevox
+  finish-clunits-alfur:
+    runs-on: self-hosted
+    needs: build-alfur
+    timeout-minutes: 1200
+    steps:
+      - name: 'Finish the clunits build process'
+        run: docker exec voice_builder ./docker_scripts/finish_clunits_voice.sh /usr/local/src/voice_alfur
+  finish-clustergen-alfur:
+    runs-on: self-hosted
+    needs: build-alfur
+    timeout-minutes: 1200
+    steps:
+      - name: 'Finish the clustergen build process'
+        run: docker exec voice_builder ./docker_scripts/finish_clustergen_voice.sh /usr/local/src/voice_alfur
+  make-test-utterances-alfur:
+    runs-on: self-hosted
+    needs: [finish-clunits-alfur, finish-clustergen-alfur]
+    steps:
+      - name: 'Generate test utterances for Alfur'
         run: |
-          echo Add other actions to build,
-          ls ~/data/alfur/audio | head
-          ls ~/data/dilja/audio | head
-          echo test, and deploy your project.
+          docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_alfur
+  convert-clunits-to-flite-alfur:
+    runs-on: self-hosted
+    needs: finish-clunits-alfur
+    steps:
+      - name: 'Run the flite conversion process for the clunits voice'
+        run: |
+          docker exec voice_builder ./docker_scripts/convert_clunits_to_flite.sh /usr/local/src/voice_alfur
+  build-dilja:
+    runs-on: self-hosted
+    needs: dependencies
+    timeout-minutes: 1200
+    steps:
+      - name: 'Train Dilja'
+        run: |
+          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 2000
+          docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_dilja
+          docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_dilja
+      - name: 'Collect test utterances for Dilja'
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-utterances-dilja
+          path: |
+            outputs/voice_dilja/grapheme/*.wav
+  convert-grapheme-dilja:
+    runs-on: self-hosted
+    needs: build-dilja
+    timeout-minutes: 1200
+    steps:
+      - name: 'Convert Dilja to .flitevox'
+        run: |
+          docker exec voice_builder ./docker_scripts/convert_grapheme_to_flite.sh /usr/local/src/voice_dilja
+      - name: 'Collect .flitevox model for Dilja'
+        uses: actions/upload-artifact@v2
+        with:
+          name: flitevox-model-dilja
+          path: |
+            outputs/voice_dilja/grapheme/*.flitevox
+  finish-clunits-dilja:
+    runs-on: self-hosted
+    needs: build-dilja
+    timeout-minutes: 1200
+    steps:
+      - name: 'Finish the clunits build process'
+        run: docker exec voice_builder ./docker_scripts/finish_clunits_voice.sh /usr/local/src/voice_dilja
+  finish-clustergen-dilja:
+    runs-on: self-hosted
+    needs: build-dilja
+    timeout-minutes: 1200
+    steps:
+      - name: 'Finish the clustergen build process'
+        run: docker exec voice_builder ./docker_scripts/finish_clustergen_voice.sh /usr/local/src/voice_dilja
+  make-test-utterances-dilja:
+    runs-on: self-hosted
+    needs: [finish-clunits-dilja, finish-clustergen-dilja]
+    steps:
+      - name: 'Generate test utterances for Dilja'
+        run: |
+          docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_dilja
+  convert-clunits-to-flite-dilja:
+    runs-on: self-hosted
+    needs: finish-clunits-dilja
+    steps:
+      - name: 'Run the flite conversion process for the clunits voice'
+        run: |
+          docker exec voice_builder ./docker_scripts/convert_clunits_to_flite.sh /usr/local/src/voice_dilja
+  cleanup:
+    runs-on: self-hosted
+    needs: [make-test-utterances-alfur, make-test-utterances-dilja]
+    if: always()
+    steps:
+      - name: 'Remove the container once work is complete'
+        run: |
+          docker run -v $GITHUB_WORKSPACE/outputs:/outputs ubuntu bash -c "rm -rf /outputs/*"
+          docker rm -f voice_builder

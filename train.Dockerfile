@@ -30,24 +30,40 @@ ENV LC_ALL C.UTF-8
 
 # Fetch and prepare Festival & friends
 WORKDIR /usr/local/src
-RUN curl -L http://festvox.org/packed/festival/2.5/festival-2.5.0-release.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
-    curl -L http://festvox.org/packed/festival/2.5/speech_tools-2.5.0-release.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+RUN mkdir -p festival festvox speech_tools
+RUN curl -L https://github.com/grammatek/festival/archive/refs/tags/2.5.2-pre1.tar.gz | \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
+    curl -L https://github.com/grammatek/speech_tools/archive/refs/tags/ds-fix-walloc.tar.gz | \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C speech_tools && \
     curl -L http://festvox.org/packed/festival/2.5/festlex_CMU.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
     curl -L http://festvox.org/packed/festival/2.5/festlex_OALD.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
     curl -L http://festvox.org/packed/festival/2.5/festlex_POSLEX.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
     curl -L http://festvox.org/packed/festival/2.5/voices/festvox_kallpc16k.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
-    curl -L http://festvox.org/packed/festvox/2.8/festvox-2.8.0-release.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
+    curl -L https://github.com/grammatek/festvox/archive/refs/tags/2.8.3-pre1.tar.gz | \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festvox
+
+# Setup Flite
+RUN cd /usr/local/src && git clone https://github.com/grammatek/Flite.git flite && cd flite && ./configure && make
 
 ENV ESTDIR /usr/local/src/speech_tools
 ENV FESTVOXDIR /usr/local/src/festvox
-ENV SPTKDIR /usr/local
+ENV SPTKDIR /usr/local/src/SPTK
+ENV FLITEDIR /usr/local/src/flite
+
+# Get SPTK
+RUN cd /usr/local/src && \ 
+    wget http://festvox.org/packed/SPTK-3.6.tar.gz && \
+    tar zxvf SPTK-3.6.tar.gz && \
+    mkdir SPTK && \
+    patch -p0 <festvox/src/clustergen/SPTK-3.6.patch && \
+    cd SPTK-3.6 && \
+    ./configure --prefix=$SPTKDIR && \
+    make && \
+    make install
 
 ADD ./ext /usr/local/src/ext
 
@@ -71,8 +87,12 @@ RUN pip3 install numpy \
 
 ENV G2P_MODEL_DIR=/app/fairseq_g2p/
 
-VOLUME ["/usr/local/src/voice"]
-VOLUME ["/usr/local/src/ext"]
+# Get G2P model
+RUN mkdir /app && cd /app && git clone https://github.com/grammatek/g2p-lstm.git fairseq_g2p
+
+# Include voice directory
+ADD ./voice /usr/local/src/voice
+
 WORKDIR /usr/local/src/voice
-ENTRYPOINT ["/bin/bash", "./run.sh"]
-CMD ["../ext/data", "standard"]
+# ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
+# CMD ["../ext/data", "standard"]
