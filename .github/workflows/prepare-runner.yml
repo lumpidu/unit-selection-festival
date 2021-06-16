@@ -15,24 +15,139 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  # This job sets up the prerequisites and makes sure that data files are present
+  prereq:
+    runs-on: self-hosted
+    env:
+      ESTDIR: ~/speech_tools
+      FESTVOXDIR: ~/festvox
+    steps:
+      - name: Cache conda
+        uses: actions/cache@v2
+        id: cache-conda
+        with:
+          path: |
+            ~/Anaconda3
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Cache downloaded speech tools
+        uses: actions/cache@v2
+        id: cache-downloaded
+        with:
+          path: |
+            ~/festival
+            ~/festvox
+            ~/speech_tools
+      - name: Cache EST
+        id: cache-est
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.est_build.done
+      - name: Cache Festival
+        id: cache-festival
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.festival_build.done
+      - name: Cache Festvox
+        id: cache-festvox
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.festvox_build.done
+      - name: Get conda
+        if: steps.cache-conda.outputs.cache-hit != 'true'
+        run: |
+          cd
+          curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh | bash
+      - name: Get EST, festival and festvox
+        if: steps.cache-downloaded.outputs.cache-hit != 'true'
+        run: |
+          cd
+          curl -L http://festvox.org/packed/festival/2.5/festival-2.5.0-release.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/speech_tools-2.5.0-release.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/festlex_CMU.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/festlex_OALD.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/festlex_POSLEX.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/voices/festvox_kallpc16k.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festvox/2.8/festvox-2.8.0-release.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions
+      - name: Build EST
+        if: steps.cache-est.outputs.cache-hit != 'true'
+        run: |
+          cd ~/speech_tools
+          ./configure && make && touch ~/.est_build.done
+      - name: Build Festival
+        if: steps.cache-festival.outputs.cache-hit != 'true'
+        run: |
+          cd ~/festival
+          ./configure && make && touch ~/.festival_build.done
+      - name: Build Festvox
+        if: steps.cache-festvox.outputs.cache-hit != 'true'
+        run: |
+          cd ~/festvox
+          cp ~/ehmm_patch/do_ehmm ./src/ehmm/scripts/
+          ./configure && make && touch ~/.festvox_build.done
+      - name: Check database existence
+        run: |
+          [ -d ~/data/alfur/ ] || exit 1
+          [ -d ~/data/dilja/ ] || exit 1
+      - name: Get g2p model
+        run: |
+          cd
+          git clone https://github.com/grammatek/g2p-lstm.git
+          conda env create -f environment.yml
+      - name: Get Festival, festvox and speech-tools
+        if: steps.cache-primes.outputs.cache-hit != 'true'
+        run: |
+          cd
+          curl -L http://festvox.org/packed/festival/2.5/festival-2.5.0-release.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/speech_tools-2.5.0-release.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/festlex_CMU.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/festlex_OALD.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/festlex_POSLEX.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festival/2.5/voices/festvox_kallpc16k.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions && \
+          curl -L http://festvox.org/packed/festvox/2.8/festvox-2.8.0-release.tar.gz | \
+          tar xz --no-same-owner --no-same-permissions
+
+  # This job builds the voices
   build:
     # The type of runner that the job will run on
     runs-on: self-hosted
-
+    needs: prereq
+    env:
+      ESTDIR: ~/speech_tools
+      FESTVOXDIR: ~/festvox
+      LC_ALL: C.UTF-8
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
       # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Link data directories and set up voice dirs
         run: |
-          echo Add other actions to build,
-          ls ~/data/alfur/audio | head
-          ls ~/data/dilja/audio | head
-          echo test, and deploy your project.
+          cd $GITHUB_WORKSPACE
+          cp voice voice_alfur
+          ln -s ~/data/alfur ext/data_alfur
+          cp voice voice_dilja
+          ln -s ~/data/dilja ext/data_dilja
+      - name: Create small (2000 utterance) voices with each dataset
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd voice_alfur
+          ./run.sh ../ext/data_alfur standard 2000
+          cd ../voice_dilja
+          ./run.sh ../ext/data_dilja standard 2000
+

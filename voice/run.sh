@@ -1,6 +1,7 @@
 # Make some dirs we need
 $FESTVOXDIR/src/general/make_dirs
 DATADIR=$1
+NUM_UTTS=${3:-1000}
 # Set up the prompts that we will train on.
 # ---
 
