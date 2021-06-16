@@ -28,7 +28,7 @@ jobs:
         with:
           path: |
             ~/Anaconda3
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+          key: ${{ runner.os }}-conda
       - name: Cache downloaded speech tools
         uses: actions/cache@v2
         id: cache-downloaded
@@ -37,24 +37,28 @@ jobs:
             ~/festival
             ~/festvox
             ~/speech_tools
+          key: ${{ runner.os }}-speech_stuff
       - name: Cache EST
         id: cache-est
         uses: actions/cache@v2
         with:
           path: |
             ~/.est_build.done
+          key: ${{ runner.os }}-est
       - name: Cache Festival
         id: cache-festival
         uses: actions/cache@v2
         with:
           path: |
             ~/.festival_build.done
+          key: ${{ runner.os }}-festival
       - name: Cache Festvox
         id: cache-festvox
         uses: actions/cache@v2
         with:
           path: |
             ~/.festvox_build.done
+          key: ${{ runner.os }}-festvox
       - name: Get conda
         if: steps.cache-conda.outputs.cache-hit != 'true'
         run: |
