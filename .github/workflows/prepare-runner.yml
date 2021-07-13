@@ -99,7 +99,7 @@ jobs:
         if: steps.cache-festvox.outputs.cache-hit != 'true'
         run: |
           cd ~/festvox
-          cp $GITHUB_WORKSPACE/ehmm_patch/do_ehmm ./src/ehmm/scripts/
+          cp $GITHUB_WORKSPACE/ext/ehmm_patch/do_ehmm ./src/ehmm/scripts/
           ./configure && make && touch ~/.festvox_build.done
       - name: Get g2p model
         run: |
