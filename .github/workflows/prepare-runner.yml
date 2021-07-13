@@ -21,7 +21,12 @@ jobs:
     env:
       ESTDIR: ~/speech_tools
       FESTVOXDIR: ~/festvox
+    volumes: 
+      - /home/github-runner/data:~/data
+      - /home/github-runner/ehmm_patch:~/ehmm_patch
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
       - name: Cache conda
         uses: actions/cache@v2
         id: cache-conda
@@ -97,7 +102,7 @@ jobs:
         if: steps.cache-festvox.outputs.cache-hit != 'true'
         run: |
           cd ~/festvox
-          cp ~/ehmm_patch/do_ehmm ./src/ehmm/scripts/
+          cp $GITHUB_WORKSPACE/ehmm_patch/do_ehmm ./src/ehmm/scripts/
           ./configure && make && touch ~/.festvox_build.done
       - name: Check database existence
         run: |
@@ -126,7 +131,6 @@ jobs:
           tar xz --no-same-owner --no-same-permissions && \
           curl -L http://festvox.org/packed/festvox/2.8/festvox-2.8.0-release.tar.gz | \
           tar xz --no-same-owner --no-same-permissions
-
   # This job builds the voices
   build:
     # The type of runner that the job will run on
@@ -138,8 +142,34 @@ jobs:
       LC_ALL: C.UTF-8
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Cache voice corpora
+        id: cache-corpora
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/wav_alfur
+            ~/index_alfur.tsv
+            ~/wav_dilja
+            ~/index_dilja.tsv
+          key: ${{ runner.os }}-corpora
+      - name: Reconstruct corpora structure if cache is present
+        if: steps.cache-corpora.outputs.cache-hit == 'true'
+        run: |
+          mkdir -p ~/data/alfur && mkdir -p ~/data/dilja
+          cp ~/wav_alfur ~/data/alfur/audio
+          cp ~/index_alfur.tsv ~/data/alfur/index.tsv
+          cp ~/wav_dilja ~/data/dilja/audio
+          cp ~/index_dilja.tsv ~/data/dilja/index.tsv
+      - name: Download voice corpora if not present in cache
+        if: steps.cache-corpora.outputs.cache-hit != 'true'
+        run: |
+          [ ! -d data/alfur ] && wget -nv -O alfur.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/alfur.zip
+          [ ! -d data/dilja ] && wget -nv -O dilja.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/dilja.zip
+          [ ! -d data ] && mkdir data
+          [ ! -d data/alfur ] && unzip -q alfur.zip -d data/alfur
+          [ ! -d data/dilja ] && unzip -q dilja.zip -d data/dilja
+          [ ! -f alfur.zip ] && rm -f alfur.zip
+          [ ! -f dilja.zip ] && rm -f dilja.zip
       # Runs a set of commands using the runners shell
       - name: Link data directories and set up voice dirs
         run: |
@@ -153,6 +183,10 @@ jobs:
           cd $GITHUB_WORKSPACE
           cd voice_alfur
           ./run.sh ../ext/data_alfur standard 2000
+          cp wav ~/wav_alfur
+          cp ../index.tsv ~/index_alfur.tsv
           cd ../voice_dilja
           ./run.sh ../ext/data_dilja standard 2000
+          cp wav ~/wav_dilja
+          cp ../index.tsv ~/index_dilja.tsv
 
