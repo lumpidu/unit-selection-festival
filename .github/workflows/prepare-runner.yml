@@ -17,7 +17,7 @@ on:
 jobs:
   # This job sets up the prerequisites and makes sure that data files are present
   prereq:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       ESTDIR: ~/speech_tools
       FESTVOXDIR: ~/festvox
@@ -29,7 +29,7 @@ jobs:
         id: cache-conda
         with:
           path: |
-            ~/Anaconda3
+            ~/miniconda
           key: ${{ runner.os }}-conda
       - name: Cache downloaded speech tools
         uses: actions/cache@v2
@@ -67,6 +67,8 @@ jobs:
           cd
           wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
           bash ~/miniconda.sh -b -p $HOME/miniconda
+          source $HOME/miniconda/bin/activate
+          conda init
       - name: Get EST, festival and festvox
         if: steps.cache-downloaded.outputs.cache-hit != 'true'
         run: |
@@ -105,7 +107,9 @@ jobs:
         run: |
           cd
           git clone https://github.com/grammatek/g2p-lstm.git
-          conda env create -f environment.yml
+          source $HOME/miniconda/bin/activate
+          conda init
+          conda env create -f g2p-lstm/environment.yml
   # This job builds the voices
   build:
     # The type of runner that the job will run on
@@ -115,6 +119,7 @@ jobs:
       ESTDIR: ~/speech_tools
       FESTVOXDIR: ~/festvox
       LC_ALL: C.UTF-8
+      G2P_MODEL_DIR: ~/g2p-lstm
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Cache voice corpora
@@ -155,6 +160,8 @@ jobs:
           ln -s ~/data/dilja ext/data_dilja
       - name: Create small (2000 utterance) voices with each dataset
         run: |
+          source $HOME/miniconda/bin/activate
+          conda activate fairseq-lstm
           cd $GITHUB_WORKSPACE
           cd voice_alfur
           ./run.sh ../ext/data_alfur standard 2000
