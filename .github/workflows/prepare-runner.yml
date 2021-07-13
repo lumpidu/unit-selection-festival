@@ -21,9 +21,6 @@ jobs:
     env:
       ESTDIR: ~/speech_tools
       FESTVOXDIR: ~/festvox
-    volumes: 
-      - /home/github-runner/data:~/data
-      - /home/github-runner/ehmm_patch:~/ehmm_patch
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -104,33 +101,11 @@ jobs:
           cd ~/festvox
           cp $GITHUB_WORKSPACE/ehmm_patch/do_ehmm ./src/ehmm/scripts/
           ./configure && make && touch ~/.festvox_build.done
-      - name: Check database existence
-        run: |
-          [ -d ~/data/alfur/ ] || exit 1
-          [ -d ~/data/dilja/ ] || exit 1
       - name: Get g2p model
         run: |
           cd
           git clone https://github.com/grammatek/g2p-lstm.git
           conda env create -f environment.yml
-      - name: Get Festival, festvox and speech-tools
-        if: steps.cache-primes.outputs.cache-hit != 'true'
-        run: |
-          cd
-          curl -L http://festvox.org/packed/festival/2.5/festival-2.5.0-release.tar.gz | \
-          tar xz --no-same-owner --no-same-permissions && \
-          curl -L http://festvox.org/packed/festival/2.5/speech_tools-2.5.0-release.tar.gz | \
-          tar xz --no-same-owner --no-same-permissions && \
-          curl -L http://festvox.org/packed/festival/2.5/festlex_CMU.tar.gz | \
-          tar xz --no-same-owner --no-same-permissions && \
-          curl -L http://festvox.org/packed/festival/2.5/festlex_OALD.tar.gz | \
-          tar xz --no-same-owner --no-same-permissions && \
-          curl -L http://festvox.org/packed/festival/2.5/festlex_POSLEX.tar.gz | \
-          tar xz --no-same-owner --no-same-permissions && \
-          curl -L http://festvox.org/packed/festival/2.5/voices/festvox_kallpc16k.tar.gz | \
-          tar xz --no-same-owner --no-same-permissions && \
-          curl -L http://festvox.org/packed/festvox/2.8/festvox-2.8.0-release.tar.gz | \
-          tar xz --no-same-owner --no-same-permissions
   # This job builds the voices
   build:
     # The type of runner that the job will run on
