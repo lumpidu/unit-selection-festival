@@ -161,7 +161,6 @@ jobs:
           cp -r voice voice_dilja
           ln -s ~/data/dilja ext/data_dilja
       - name: 'Build voices'
-        description: 'Build the voices using a docker container'
         run: |
           cd $GITHUB_WORKSPACE
           docker build . --tag lvl-us-is-train -f train.Dockerfile
