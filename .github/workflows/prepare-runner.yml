@@ -162,9 +162,10 @@ jobs:
           ln -s ~/data/dilja ext/data_dilja
       - name: 'Build voices'
         description: 'Build the voices using a docker container'
-        runs:
-          using: 'docker'
-          image: 'train.Dockerfile'
+        run: |
+          cd $GITHUB_WORKSPACE
+          docker build . --tag lvl-us-is-train -f train.Dockerfile
+          docker run -v ${PWD}/ext/data:/usr/local/src/ext/data -v ${PWD}/ext/g2p-lstm/:/app/fairseq_g2p -v ${PWD}/voice_alfur/:/usr/local/src/voice_alfur -v ${PWD}/voice_dilja/:/usr/local/src/voice_dilja lvl-us-is-train:latest
         # run: |
         #   source $HOME/miniconda/bin/activate
         #   conda activate fairseq-lstm
