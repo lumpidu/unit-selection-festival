@@ -124,47 +124,50 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Cache voice corpora
-        id: cache-corpora
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/wav_alfur
-            ~/index_alfur.tsv
-            ~/wav_dilja
-            ~/index_dilja.tsv
-          key: ${{ runner.os }}-corpora
-      - name: Reconstruct corpora structure if cache is present
-        if: steps.cache-corpora.outputs.cache-hit == 'true'
-        run: |
-          mkdir -p ~/data/alfur && mkdir -p ~/data/dilja
-          cp ~/wav_alfur ~/data/alfur/audio
-          cp ~/index_alfur.tsv ~/data/alfur/index.tsv
-          cp ~/wav_dilja ~/data/dilja/audio
-          cp ~/index_dilja.tsv ~/data/dilja/index.tsv
-      - name: Download voice corpora if not present in cache
-        if: steps.cache-corpora.outputs.cache-hit != 'true'
-        run: |
-          [ ! -d data/alfur ] && wget -nv -O alfur.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/alfur.zip
-          [ ! -d data/dilja ] && wget -nv -O dilja.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/dilja.zip
-          [ ! -d data ] && mkdir data
-          [ ! -d data/alfur ] && unzip -q alfur.zip -d data/alfur
-          [ ! -d data/dilja ] && unzip -q dilja.zip -d data/dilja
-          [ -f alfur.zip ] && rm -f alfur.zip
-          [ -f dilja.zip ] && rm -f dilja.zip
-      # Runs a set of commands using the runners shell
-      - name: Link data directories and set up voice dirs
-        run: |
-          cd $GITHUB_WORKSPACE
-          cp -r voice voice_alfur
-          ln -s ~/data/alfur ext/data_alfur
-          cp -r voice voice_dilja
-          ln -s ~/data/dilja ext/data_dilja
-      - name: 'Build voices'
+      # - name: Cache voice corpora
+      #   id: cache-corpora
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: |
+      #       ~/wav_alfur
+      #       ~/index_alfur.tsv
+      #       ~/wav_dilja
+      #       ~/index_dilja.tsv
+      #     key: ${{ runner.os }}-corpora
+      # - name: Reconstruct corpora structure if cache is present
+      #   if: steps.cache-corpora.outputs.cache-hit == 'true'
+      #   run: |
+      #     mkdir -p ~/data/alfur && mkdir -p ~/data/dilja
+      #     cp ~/wav_alfur ~/data/alfur/audio
+      #     cp ~/index_alfur.tsv ~/data/alfur/index.tsv
+      #     cp ~/wav_dilja ~/data/dilja/audio
+      #     cp ~/index_dilja.tsv ~/data/dilja/index.tsv
+      # - name: Download voice corpora if not present in cache
+      #   if: steps.cache-corpora.outputs.cache-hit != 'true'
+      #   run: |
+      #     [ ! -d data/alfur ] && wget -nv -O alfur.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/alfur.zip
+      #     [ ! -d data/dilja ] && wget -nv -O dilja.zip https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/104/dilja.zip
+      #     [ ! -d data ] && mkdir data
+      #     [ ! -d data/alfur ] && unzip -q alfur.zip -d data/alfur
+      #     [ ! -d data/dilja ] && unzip -q dilja.zip -d data/dilja
+      #     [ -f alfur.zip ] && rm -f alfur.zip
+      #     [ -f dilja.zip ] && rm -f dilja.zip
+      # # Runs a set of commands using the runners shell
+      # - name: Link data directories and set up voice dirs
+      #   run: |
+      #     cd $GITHUB_WORKSPACE
+      #     cp -r voice voice_alfur
+      #     ln -s ~/data/alfur ext/data_alfur
+      #     cp -r voice voice_dilja
+      #     ln -s ~/data/dilja ext/data_dilja
+      - name: 'Build container'
         run: |
           cd $GITHUB_WORKSPACE
           docker build . --tag lvl-us-is-train -f train.Dockerfile
-          docker run -v ${PWD}/ext/data:/usr/local/src/ext/data -v ${PWD}/ext/g2p-lstm/:/app/fairseq_g2p -v ${PWD}/voice_alfur/:/usr/local/src/voice_alfur -v ${PWD}/voice_dilja/:/usr/local/src/voice_dilja lvl-us-is-train:latest
+      - name: 'Build voices'
+        run: |
+          cd $GITHUB_WORKSPACE
+          docker run -v speech-corpora:/usr/local/src/ext/data -v ${PWD}/ext/g2p-lstm/:/app/fairseq_g2p -v ${PWD}/voice_alfur/:/usr/local/src/voice_alfur -v ${PWD}/voice_dilja/:/usr/local/src/voice_dilja lvl-us-is-train:latest
         # run: |
         #   source $HOME/miniconda/bin/activate
         #   conda activate fairseq-lstm
