@@ -150,19 +150,21 @@ jobs:
           [ ! -d data ] && mkdir data
           [ ! -d data/alfur ] && unzip -q alfur.zip -d data/alfur
           [ ! -d data/dilja ] && unzip -q dilja.zip -d data/dilja
-          [ ! -f alfur.zip ] && rm -f alfur.zip
-          [ ! -f dilja.zip ] && rm -f dilja.zip
+          [ -f alfur.zip ] && rm -f alfur.zip
+          [ -f dilja.zip ] && rm -f dilja.zip
       # Runs a set of commands using the runners shell
       - name: Link data directories and set up voice dirs
         run: |
           cd $GITHUB_WORKSPACE
-          cp voice voice_alfur
+          cp -r voice voice_alfur
           ln -s ~/data/alfur ext/data_alfur
-          cp voice voice_dilja
+          cp -r voice voice_dilja
           ln -s ~/data/dilja ext/data_dilja
-      - name: Create small (2000 utterance) voices with each dataset
-        id: build_voices
-        uses: ./
+      - name: 'Build voices'
+        description: 'Build the voices using a docker container'
+        runs:
+          using: 'docker'
+          image: 'train.Dockerfile'
         # run: |
         #   source $HOME/miniconda/bin/activate
         #   conda activate fairseq-lstm

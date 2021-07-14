@@ -1,16 +1,6 @@
 # action.yml
 name: 'Build voices'
 description: 'Build the voices using a docker container'
-# inputs:
-#   utts-per-speaker:  # id of input
-#     description: 'How many utterances to use per speaker'
-#     required: true
-#     default: '2000'
-# outputs:
-#   output-code: # id of output
-#     description: 'Code indicating whether the build was successful'
 runs:
   using: 'docker'
   image: 'train.Dockerfile'
-  # args:
-  #   - ${{ inputs.utts-per-speaker }}
