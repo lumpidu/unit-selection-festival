@@ -74,5 +74,5 @@ ENV G2P_MODEL_DIR=/app/fairseq_g2p/
 VOLUME ["/usr/local/src/voice"]
 VOLUME ["/usr/local/src/ext"]
 WORKDIR /usr/local/src/voice
-ENTRYPOINT ["/bin/bash", "./run.sh"]
-CMD ["../ext/data", "standard"]
+ENTRYPOINT ["/bin/bash", "../entrypoint.sh"]
+# CMD ["../ext/data", "standard"]
