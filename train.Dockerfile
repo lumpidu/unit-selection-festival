@@ -71,9 +71,6 @@ RUN pip3 install numpy \
 
 ENV G2P_MODEL_DIR=/app/fairseq_g2p/
 
-VOLUME ["/usr/local/src/voice_alfur"]
-VOLUME ["/usr/local/src/voice_dilja"]
-VOLUME ["/usr/local/src/ext"]
-WORKDIR /usr/local/src/voice_alfur
-ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
+WORKDIR /usr/local/src/voice
+# ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
 # CMD ["../ext/data", "standard"]

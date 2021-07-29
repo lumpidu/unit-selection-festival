@@ -33,21 +33,42 @@ jobs:
           git clone https://github.com/grammatek/g2p-lstm.git
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up voice dirs
-        run: |
-          cd $GITHUB_WORKSPACE
-          cp -r $GITHUB_WORKSPACE/voice $GITHUB_WORKSPACE/voice_alfur
-          ls $GITHUB_WORKSPACE/voice_alfur
-          cp -r $GITHUB_WORKSPACE/voice $GITHUB_WORKSPACE/voice_dilja
-          ls $GITHUB_WORKSPACE/voice_dilja
+
       - name: 'Build container'
         run: |
           cd $GITHUB_WORKSPACE
           docker build . --tag lvl-us-is-train -f train.Dockerfile
-      - name: 'Build voices'
+      - name: 'Spin up the container'
         run: |
           cd $GITHUB_WORKSPACE
-          docker run -v speech-corpora:/usr/local/src/ext/data -v ${G2P_MODEL_DIR}:/app/fairseq_g2p -v ${PWD}/voice_alfur/:/usr/local/src/voice_alfur -v ${PWD}/voice_dilja/:/usr/local/src/voice_dilja lvl-us-is-train:latest
+          docker run -d \
+            --name voice_builder \
+            -v speech-corpora:/usr/local/src/ext/data \
+            -v /home/github-runner/g2p-lstm:/app/fairseq_g2p \
+            -v voice-alfur:/usr/local/src/voice_alfur \
+            -v voice-dilja:/usr/local/src/voice_dilja \
+            -v tts-samples:/outputs
+            -v $GITHUB_WORKSPACE/voice:/usr/local/src/voice \
+            lvl-us-is-train:latest \
+            bash -c "tail -f /dev/null"
+      - name: Set up voice dirs
+        run: |
+          docker exec -it voice_builder /bin/bash -c "/usr/local/src/voice/docker_scripts/setup_voices.sh /usr/local/src/voice_alfur"
+          docker exec -it voice_builder /bin/bash -c "/usr/local/src/voice/docker_scripts/setup_voices.sh /usr/local/src/voice_dilja"
+      - name: 'Train Alfur'
+        run: |
+          docker exec -it voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur
+          docker exec -it voice_builder ./docker_scripts/build_voice.sh /usr/local/src/voice_alfur
+      - name: 'Generate test utterances for Alfur'
+        run: |
+          docker exec -it voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_alfur
+      - name: 'Train Dilja'
+        run: |
+          docker exec -it voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja
+          docker exec -it voice_builder ./docker_scripts/build_voice.sh /usr/local/src/voice_dilja
+      - name: 'Generate test utterances for Dilja'
+        run: |
+          docker exec -it voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_dilja
         # run: |
         #   source $HOME/miniconda/bin/activate
         #   conda activate fairseq-lstm
