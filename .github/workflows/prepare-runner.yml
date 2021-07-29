@@ -30,7 +30,8 @@ jobs:
       - name: Get g2p model
         run: |
           cd
-          git clone https://github.com/grammatek/g2p-lstm.git
+          [ ! -d g2p-lstm ] && git clone https://github.com/grammatek/g2p-lstm.git
+          cd g2p-lstm && git pull
       - name: Checkout
         uses: actions/checkout@v2
 
