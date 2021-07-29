@@ -70,6 +70,8 @@ jobs:
       - name: 'Generate test utterances for Dilja'
         run: |
           docker exec -it voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_dilja
+      - name: 'Remove the container once work is complete'
+        run: docker rm -f voice_builder
         # run: |
         #   source $HOME/miniconda/bin/activate
         #   conda activate fairseq-lstm
