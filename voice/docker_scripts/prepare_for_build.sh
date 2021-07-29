@@ -1,6 +1,8 @@
 #!/bin/bash
 voice_directory=$1 # e.g. /usr/local/src/voice_alfur
 
+
+
 cd $voice_directory/voice
 
 FESTVOXDIR=/usr/local/src/festvox
@@ -26,7 +28,7 @@ head -n $NUM_UTTS txt.nonum.data > etc/txt.done.data
 python3 normalize.py $DATADIR/index.tsv "-" | grep -o "[^ ]*" | sort | uniq | tail -n+2 > vocabulary.txt
 
 
-python3 f_g2p.py --model $3 --apply vocabulary.txt > lexicon.txt
+G2P_MODEL_DIR=/app/fairseq_g2p python3 f_g2p.py --model $3 --apply vocabulary.txt > lexicon.txt
 
 # TODO: NOTE this might not be needed anymore since x-sampa already are ascii
 # readable phonemes
