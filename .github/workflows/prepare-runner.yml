@@ -48,7 +48,7 @@ jobs:
             -v /home/github-runner/g2p-lstm:/app/fairseq_g2p \
             -v voice-alfur:/usr/local/src/voice_alfur \
             -v voice-dilja:/usr/local/src/voice_dilja \
-            -v tts-samples:/outputs
+            -v tts-samples:/outputs \
             -v $GITHUB_WORKSPACE/voice:/usr/local/src/voice \
             lvl-us-is-train:latest \
             bash -c "tail -f /dev/null"
