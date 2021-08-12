@@ -7,29 +7,18 @@ on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [ master, setup-actions ]
-  pull_request:
-    branches: [ master, setup-actions ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This job builds the voices
-  build:
-    # The type of runner that the job will run on
+  # This job prepares the Docker container
+  setup:
     runs-on: self-hosted
-    # needs: prereq
-    env:
-      ESTDIR: ~/speech_tools
-      FESTVOXDIR: ~/festvox
-      LC_ALL: C.UTF-8
-      G2P_MODEL_DIR: /home/runner/g2p-lstm
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: 'Build container'
         run: |
           cd $GITHUB_WORKSPACE
@@ -47,6 +36,18 @@ jobs:
             -v $GITHUB_WORKSPACE/voice:/usr/local/src/voice \
             lvl-us-is-train:latest \
             bash -c "tail -f /dev/null"
+  # This job builds the voices
+  build:
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    needs: setup
+    env:
+      ESTDIR: ~/speech_tools
+      FESTVOXDIR: ~/festvox
+      LC_ALL: C.UTF-8
+      G2P_MODEL_DIR: /home/runner/g2p-lstm
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
       - name: Set up voice dirs
         run: |
           docker exec voice_builder ./docker_scripts/setup_voices.sh /usr/local/src/voice_alfur
@@ -65,18 +66,10 @@ jobs:
       - name: 'Generate test utterances for Dilja'
         run: |
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_dilja
+  cleanup:
+    runs-on: self-hosted
+    needs: build
+    if: always()
+    steps:
       - name: 'Remove the container once work is complete'
         run: docker rm -f voice_builder
-        # run: |
-        #   source $HOME/miniconda/bin/activate
-        #   conda activate fairseq-lstm
-        #   cd $GITHUB_WORKSPACE
-        #   cd voice_alfur
-        #   ./run.sh ../ext/data_alfur standard 2000
-        #   cp wav ~/wav_alfur
-        #   cp ../index.tsv ~/index_alfur.tsv
-        #   cd ../voice_dilja
-        #   ./run.sh ../ext/data_dilja standard 2000
-        #   cp wav ~/wav_dilja
-        #   cp ../index.tsv ~/index_dilja.tsv
-

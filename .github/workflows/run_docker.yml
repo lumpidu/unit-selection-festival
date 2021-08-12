@@ -1,6 +1,0 @@
-# action.yml
-name: 'Build voices'
-description: 'Build the voices using a docker container'
-runs:
-  using: 'docker'
-  image: 'train.Dockerfile'
