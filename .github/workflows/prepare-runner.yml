@@ -36,22 +36,21 @@ jobs:
             -v $GITHUB_WORKSPACE/voice:/usr/local/src/voice \
             lvl-us-is-train:latest \
             bash -c "tail -f /dev/null"
-  # This job builds the voices
-  build:
-    # The type of runner that the job will run on
+  prepare-voice-dirs:
     runs-on: self-hosted
     needs: setup
-    env:
-      ESTDIR: ~/speech_tools
-      FESTVOXDIR: ~/festvox
-      LC_ALL: C.UTF-8
-      G2P_MODEL_DIR: /home/runner/g2p-lstm
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Set up voice dirs
         run: |
           docker exec voice_builder ./docker_scripts/setup_voices.sh /usr/local/src/voice_alfur
           docker exec voice_builder ./docker_scripts/setup_voices.sh /usr/local/src/voice_dilja
+  # This job builds the voices
+  build-alfur:
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    needs: prepare-voice-dirs
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
       - name: 'Train Alfur'
         run: |
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 2000
@@ -59,6 +58,10 @@ jobs:
       - name: 'Generate test utterances for Alfur'
         run: |
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_alfur
+  build-dilja:
+    runs-on: self-hosted
+    needs: prepare-voice-dirs
+    steps:
       - name: 'Train Dilja'
         run: |
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 2000
@@ -68,7 +71,7 @@ jobs:
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_dilja
   cleanup:
     runs-on: self-hosted
-    needs: build
+    needs: [build-alfur, build-dilja]
     if: always()
     steps:
       - name: 'Remove the container once work is complete'
