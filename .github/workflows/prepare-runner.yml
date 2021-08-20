@@ -53,8 +53,8 @@ jobs:
     steps:
       - name: 'Train Alfur'
         run: |
-          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 2000
-          docker exec voice_builder ./docker_scripts/build_voice.sh /usr/local/src/voice_alfur
+          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 5000
+          docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
       - name: 'Generate test utterances for Alfur'
         run: |
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_alfur
@@ -64,8 +64,8 @@ jobs:
     steps:
       - name: 'Train Dilja'
         run: |
-          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 2000
-          docker exec voice_builder ./docker_scripts/build_voice.sh /usr/local/src/voice_dilja
+          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 5000
+          docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_dilja
       - name: 'Generate test utterances for Dilja'
         run: |
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_dilja
