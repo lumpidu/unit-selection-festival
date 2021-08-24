@@ -13,7 +13,7 @@ voice_name=$(basename $voice_directory)
 
 # mkdir /outputs/$voice_name/$timestamp
 
-cd $voice_directory/voice
+cd $voice_directory/builds
 
 # Find the most recent build - grep pattern matches timestamp, tail picks most recent entry
 newest=`ls -ltr | grep -P "\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}"  | awk '{print$9}' | tail -1`
