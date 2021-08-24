@@ -49,29 +49,67 @@ jobs:
     # The type of runner that the job will run on
     runs-on: self-hosted
     needs: prepare-voice-dirs
+    timeout-minutes: 1200
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: 'Train Alfur'
         run: |
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 5000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
+  finish-clunits-alfur:
+    runs-on: self-hosted
+    needs: build-alfur
+    timeout-minutes: 1200
+    steps:
+      - name: 'Finish the clunits build process'
+        run: docker exec voice_builder ./docker_scripts/finish_clunits_voice.sh /usr/local/src/voice_alfur
+  finish-clustergen-alfur:
+    runs-on: self-hosted
+    needs: build-alfur
+    timeout-minutes: 1200
+    steps:
+      - name: 'Finish the clustergen build process'
+        run: docker exec voice_builder ./docker_scripts/finish_clustergen_voice.sh /usr/local/src/voice_alfur
+  make-test-utterances-alfur:
+    runs-on: self-hosted
+    needs: [finish-clunits-alfur, finish-clustergen-alfur]
+    steps:
       - name: 'Generate test utterances for Alfur'
         run: |
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_alfur
   build-dilja:
     runs-on: self-hosted
     needs: prepare-voice-dirs
+    timeout-minutes: 1200
     steps:
       - name: 'Train Dilja'
         run: |
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 5000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_dilja
+  finish-clunits-dilja:
+    runs-on: self-hosted
+    needs: build-dilja
+    timeout-minutes: 1200
+    steps:
+      - name: 'Finish the clunits build process'
+        run: docker exec voice_builder ./docker_scripts/finish_clunits_voice.sh /usr/local/src/voice_dilja
+  finish-clustergen-dilja:
+    runs-on: self-hosted
+    needs: build-dilja
+    timeout-minutes: 1200
+    steps:
+      - name: 'Finish the clustergen build process'
+        run: docker exec voice_builder ./docker_scripts/finish_clustergen_voice.sh /usr/local/src/voice_dilja
+  make-test-utterances-dilja:
+    runs-on: self-hosted
+    needs: [finish-clunits-dilja, finish-clustergen-dilja]
+    steps:
       - name: 'Generate test utterances for Dilja'
         run: |
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_dilja
   cleanup:
     runs-on: self-hosted
-    needs: [build-alfur, build-dilja]
+    needs: [make-test-utterances-alfur, make-test-utterances-dilja]
     if: always()
     steps:
       - name: 'Remove the container once work is complete'

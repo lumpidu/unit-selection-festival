@@ -9,11 +9,19 @@ voice_name=$(basename $voice_directory)
 #Create directory for tts outputs if not present
 [ ! -d /outputs/$voice_name ] && mkdir /outputs/$voice_name
 
-timestamp=$(date +%Y-%m-%d_%H-%M-%S)
+# timestamp=$(date +%Y-%m-%d_%H-%M-%S)
 
-mkdir /outputs/$voice_name/$timestamp
+# mkdir /outputs/$voice_name/$timestamp
 
 cd $voice_directory/voice
+
+# Find the most recent build - grep pattern matches timestamp, tail picks most recent entry
+newest=`ls -ltr | grep -P "\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}"  | awk '{print$9}' | tail -1`
+cd $newest
+
+# Uses same timestamp as voice builds
+mkdir /outputs/$voice_name/$newest
+
 IFS=$'\t'
 while read -r utt_id line; do
     echo ${id}.wav
