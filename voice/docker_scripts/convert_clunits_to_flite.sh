@@ -9,16 +9,12 @@ cd $voice_directory/builds_clunits
 newest=`ls -ltr | grep -P "\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}"  | awk '{print$9}' | tail -1`
 cd $newest
 
-echo "FV_INST=lvl
-FV_LANG=is
-FV_NAME=v0
-FV_TYPE=clunits
-FV_VOICENAME=$FV_INST"_"$FV_LANG"_"$FV_NAME
-FV_FULLVOICENAME=$FV_VOICENAME"_"$FV_TYPE
-" > etc/voice.defs
 
-./bin/do_build do_pm
-./bin/do_build do_mcep
-./bin/do_build do_dur
-./bin/do_build build_clunits
+export FLITEDIR=/flite
+$FLITEDIR/bin/setup_flite
 
+./bin/build_flite lpc
+./bin/build_flite mcep
+./bin/build_flite sts
+./bin/build_flite idx
+cd flite; make

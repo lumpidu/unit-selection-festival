@@ -34,6 +34,7 @@ jobs:
             -v voice-dilja:/usr/local/src/voice_dilja \
             -v tts-samples:/outputs \
             -v $GITHUB_WORKSPACE/voice:/usr/local/src/voice \
+            -v flite:/flite \
             lvl-us-is-train:latest \
             bash -c "tail -f /dev/null"
   prepare-voice-dirs:
@@ -77,6 +78,13 @@ jobs:
       - name: 'Generate test utterances for Alfur'
         run: |
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_alfur
+  convert-clunits-to-flite-alfur:
+    runs-on: self-hosted
+    needs: finish-clunits-alfur
+    steps:
+      - name: 'Run the flite conversion process for the clunits voice'
+        run: |
+          docker exec voice_builder ./docker_scripts/convert_clunits_to_flite.sh /usr/local/src/voice_alfur
   build-dilja:
     runs-on: self-hosted
     needs: prepare-voice-dirs
@@ -107,6 +115,13 @@ jobs:
       - name: 'Generate test utterances for Dilja'
         run: |
           docker exec voice_builder ./docker_scripts/generate_utts.sh /usr/local/src/voice_dilja
+  convert-clunits-to-flite-dilja:
+    runs-on: self-hosted
+    needs: finish-clunits-dilja
+    steps:
+      - name: 'Run the flite conversion process for the clunits voice'
+        run: |
+          docker exec voice_builder ./docker_scripts/convert_clunits_to_flite.sh /usr/local/src/voice_dilja
   cleanup:
     runs-on: self-hosted
     needs: [make-test-utterances-alfur, make-test-utterances-dilja]

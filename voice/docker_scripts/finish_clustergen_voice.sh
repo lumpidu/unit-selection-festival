@@ -9,6 +9,13 @@ cd $voice_directory/builds
 newest=`ls -ltr | grep -P "\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}"  | awk '{print$9}' | tail -1`
 cd $newest
 
+echo "FV_INST=lvl
+FV_LANG=is
+FV_NAME=v0
+FV_TYPE=cg
+FV_VOICENAME=$FV_INST"_"$FV_LANG"_"$FV_NAME
+FV_FULLVOICENAME=$FV_VOICENAME"_"$FV_TYPE
+" > etc/voice.defs
 
 ./bin/do_clustergen parallel f0
 ./bin/do_clustergen parallel mcep
