@@ -13,9 +13,8 @@ echo "FV_INST=lvl
 FV_LANG=is
 FV_NAME=v0
 FV_TYPE=clunits
-FV_VOICENAME=\$FV_INST"_"\$FV_LANG"_"\$FV_NAME
-FV_FULLVOICENAME=\$FV_VOICENAME"_"\$FV_TYPE
-" > etc/voice.defs
+FV_VOICENAME=\$FV_INST\"_\"\$FV_LANG\"_\"\$FV_NAME
+FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE" > etc/voice.defs
 
 ./bin/do_build do_pm
 ./bin/do_build do_mcep
