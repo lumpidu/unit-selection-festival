@@ -41,7 +41,6 @@ G2P_MODEL_DIR=/app/fairseq_g2p python3 f_g2p.py --model $3 --apply vocabulary.tx
 python3 build_lexicon.py sampa-map.tsv lexicon.txt festvox/lexicon.scm
 
 # Power normalize and format wavs (16kHz, 16bit)
-# bin/get_wavs $DATADIR/audio/*.wav
 awk -v data_dir=$DATADIR '{print data_dir"/audio/"$2".wav"}' etc/txt.done.data | xargs bin/get_wavs
 
 # Add random noise to audio (see script for more info)

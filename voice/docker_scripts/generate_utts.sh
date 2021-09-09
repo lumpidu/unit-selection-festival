@@ -11,10 +11,6 @@ voice_name=$(basename $voice_directory)
 #Create directory for tts outputs if not present
 [ ! -d /outputs/$voice_name ] && mkdir /outputs/$voice_name
 
-# timestamp=$(date +%Y-%m-%d_%H-%M-%S)
-
-# mkdir /outputs/$voice_name/$timestamp
-
 cd $voice_directory/builds
 
 # Find the most recent build - grep pattern matches timestamp, tail picks most recent entry
