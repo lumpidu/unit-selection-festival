@@ -1,4 +1,6 @@
 #!/bin/bash
+set -eo pipefail
+
 voice_directory=$1 # e.g. /usr/local/src/voice_alfur
 
 FESTIVALDIR=/usr/local/src/festival

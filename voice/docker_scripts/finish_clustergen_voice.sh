@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 
 voice_directory=$1 # e.g. /usr/local/src/voice_alfur
 
@@ -13,8 +14,8 @@ echo "FV_INST=lvl
 FV_LANG=is
 FV_NAME=v0
 FV_TYPE=cg
-FV_VOICENAME=$FV_INST"_"$FV_LANG"_"$FV_NAME
-FV_FULLVOICENAME=$FV_VOICENAME"_"$FV_TYPE
+FV_VOICENAME=\$FV_INST\"_\"\$FV_LANG\"_\"\$FV_NAME
+FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE
 " > etc/voice.defs
 
 ./bin/do_clustergen parallel f0
