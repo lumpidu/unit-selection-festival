@@ -1,6 +1,7 @@
 # Make some dirs we need
 $FESTVOXDIR/src/general/make_dirs
 DATADIR=$1
+NUM_UTTS=${3:-1000}
 # Set up the prompts that we will train on.
 # ---
 
@@ -17,7 +18,7 @@ grep -v '"[^"]*[0-9cwqz]' txt.complete.data > txt.nonum.data
 # For large databases this can take some time to run as there is a squared aspect 
 # to this based on the number of instances of each unit type.
 # So lets start with only 100 tokens, this number can be increased for better sound
-head -n 1000 txt.nonum.data > etc/txt.done.data
+head -n $NUM_UTTS txt.nonum.data > etc/txt.done.data
 # We've only successfully trained on ~2000 prompts. Training on ~2000 prompts
 # needed to be done overnight.
 # Using all the tokens uncomment the line below if you want to use all of the tokens
@@ -27,7 +28,7 @@ head -n 1000 txt.nonum.data > etc/txt.done.data
 # ---
 
 #Create list of all words in prompts
-python3 normalize.py $1/index.tsv "-" | grep -o "[^ ]*" | sort | uniq > vocabulary.txt
+python3 normalize.py $DATADIR/index.tsv "-" | grep -o "[^ ]*" | sort | uniq > vocabulary.txt
 
 # Add additional vocabulary
 # This is highly recommended but needs additional resources you can find online
