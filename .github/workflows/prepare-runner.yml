@@ -55,7 +55,7 @@ jobs:
     steps:
       - name: 'Train Alfur'
         run: |
-          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 5000
+          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 1000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
   finish-clunits-alfur:
     runs-on: self-hosted
@@ -92,7 +92,7 @@ jobs:
     steps:
       - name: 'Train Dilja'
         run: |
-          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 5000
+          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 1000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_dilja
   finish-clunits-dilja:
     runs-on: self-hosted
