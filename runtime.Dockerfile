@@ -53,15 +53,15 @@ ENV SPTKDIR /opt
 
 # Build the Edinburgh Speech Tools
 WORKDIR /opt/speech_tools
-RUN ./configure && make
+RUN ./configure && make -j
 
 # Build Festival
 WORKDIR /opt/festival
-RUN ./configure && make
+RUN ./configure && make -j
 
 # Build Festvox
 WORKDIR /opt/festvox
-RUN ./configure && make
+RUN ./configure && make -j
 
 RUN pip3 install --upgrade pip \
     && pip3 install numpy \

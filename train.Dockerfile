@@ -54,16 +54,16 @@ ADD ./ext /usr/local/src/ext
 
 # Build the Edinburgh Speech Tools
 WORKDIR /usr/local/src/speech_tools
-RUN ./configure && make
+RUN ./configure && make -j
 
 # Build Festival
 WORKDIR /usr/local/src/festival
-RUN ./configure && make
+RUN ./configure && make -j
 
 # Build Festvox
 WORKDIR /usr/local/src/festvox
 RUN cp /usr/local/src/ext/ehmm_patch/do_ehmm ./src/ehmm/scripts/
-RUN ./configure && make
+RUN ./configure && make -j
 
 RUN pip3 install numpy \
     && pip3 install git+https://github.com/sequitur-g2p/sequitur-g2p@master \
