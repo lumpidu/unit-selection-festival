@@ -30,9 +30,9 @@ ENV LC_ALL C.UTF-8
 
 # Fetch and prepare Festival & friends
 WORKDIR /usr/local/src
-RUN curl -L http://festvox.org/packed/festival/2.5/festival-2.5.0-release.tar.gz | \
+RUN curl -L https://github.com/grammatek/festival/archive/refs/tags/2.5.2-pre1.tar.gz | \
     tar xz --no-same-owner --no-same-permissions && \
-    curl -L http://festvox.org/packed/festival/2.5/speech_tools-2.5.0-release.tar.gz | \
+    curl -L https://github.com/grammatek/speech_tools/archive/refs/tags/ds-fix-walloc.tar.gz | \
     tar xz --no-same-owner --no-same-permissions && \
     curl -L http://festvox.org/packed/festival/2.5/festlex_CMU.tar.gz | \
     tar xz --no-same-owner --no-same-permissions && \
@@ -42,7 +42,7 @@ RUN curl -L http://festvox.org/packed/festival/2.5/festival-2.5.0-release.tar.gz
     tar xz --no-same-owner --no-same-permissions && \
     curl -L http://festvox.org/packed/festival/2.5/voices/festvox_kallpc16k.tar.gz | \
     tar xz --no-same-owner --no-same-permissions && \
-    curl -L http://festvox.org/packed/festvox/2.8/festvox-2.8.0-release.tar.gz | \
+    curl -L https://github.com/grammatek/festvox/archive/refs/tags/2.8.3-pre1.tar.gz | \
     tar xz --no-same-owner --no-same-permissions
 
 ENV ESTDIR /usr/local/src/speech_tools
