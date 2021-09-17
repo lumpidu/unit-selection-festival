@@ -53,7 +53,7 @@ ENV SPTKDIR /opt
 
 # Build the Edinburgh Speech Tools
 WORKDIR /opt/speech_tools
-RUN ./configure && make -j
+RUN ./configure && make
 
 # Build Festival
 WORKDIR /opt/festival
