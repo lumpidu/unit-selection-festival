@@ -31,20 +31,21 @@ ENV LC_ALL C.UTF-8
 
 # Fetch and prepare Festival & friends
 WORKDIR /opt
+RUN mkdir -p festival festvox speech_tools
 RUN curl -L https://github.com/grammatek/festival/archive/refs/tags/2.5.2-pre1.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
     curl -L https://github.com/grammatek/speech_tools/archive/refs/tags/ds-fix-walloc.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C speech_tools && \
     curl -L http://festvox.org/packed/festival/2.5/festlex_CMU.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
     curl -L http://festvox.org/packed/festival/2.5/festlex_OALD.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
     curl -L http://festvox.org/packed/festival/2.5/festlex_POSLEX.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
     curl -L http://festvox.org/packed/festival/2.5/voices/festvox_kallpc16k.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions && \
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festival && \
     curl -L https://github.com/grammatek/festvox/archive/refs/tags/2.8.3-pre1.tar.gz | \
-    tar xz --no-same-owner --no-same-permissions
+    tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festvox
 
 ENV ESTDIR /opt/speech_tools
 ENV FESTVOXDIR /opt/festvox
