@@ -57,11 +57,11 @@ RUN ./configure && make
 
 # Build Festival
 WORKDIR /opt/festival
-RUN ./configure && make -j
+RUN ./configure && make
 
 # Build Festvox
 WORKDIR /opt/festvox
-RUN ./configure && make -j
+RUN ./configure && make
 
 RUN pip3 install --upgrade pip \
     && pip3 install numpy \

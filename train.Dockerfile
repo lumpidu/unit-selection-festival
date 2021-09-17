@@ -58,12 +58,12 @@ RUN ./configure && make
 
 # Build Festival
 WORKDIR /usr/local/src/festival
-RUN ./configure && make -j
+RUN ./configure && make
 
 # Build Festvox
 WORKDIR /usr/local/src/festvox
 RUN cp /usr/local/src/ext/ehmm_patch/do_ehmm ./src/ehmm/scripts/
-RUN ./configure && make -j
+RUN ./configure && make
 
 RUN pip3 install numpy \
     && pip3 install git+https://github.com/sequitur-g2p/sequitur-g2p@master \
