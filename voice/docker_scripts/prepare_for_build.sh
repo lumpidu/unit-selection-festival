@@ -61,3 +61,7 @@ mv festival/clunits/mcep.desc-backup festival/clunits/mcep.desc
 mv festival/clunits/mceptraj.desc-backup festival/clunits/mceptraj.desc
 mv festival/dur/etc/dur.feats-backup festival/dur/etc/dur.feats
 mv festival/dur/etc/statedur.feats-backup festival/dur/etc/statedur.feats
+
+# Create directory for grapheme build
+mkdir -p $voice_directory/builds_grapheme/$timestamp
+cd $voice_directory && cp -r $voice_directory/builds/$timestamp/* $voice_directory/builds_grapheme/$timestamp
