@@ -48,7 +48,7 @@ bin/add_noise etc/txt.done.data
 
 # Create directory for grapheme build
 mkdir -p $voice_directory/builds_grapheme/$timestamp
-cd $voice_directory && cp -r $voice_directory/builds/$timestamp/* $voice_directory/builds_grapheme/$timestamp
+cp -r $voice_directory/builds/$timestamp/* $voice_directory/builds_grapheme/$timestamp
 
 # This is needed to accommodate for the language-specific feature set
 cp festival/clunits/mcep.desc festival/clunits/mcep.desc-backup
