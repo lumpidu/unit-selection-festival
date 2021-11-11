@@ -46,6 +46,10 @@ awk -v data_dir=$DATADIR '{print data_dir"/audio/"$2".wav"}' etc/txt.done.data |
 # Add random noise to audio (see script for more info)
 bin/add_noise etc/txt.done.data
 
+# Create directory for grapheme build
+mkdir -p $voice_directory/builds_grapheme/$timestamp
+cd $voice_directory && cp -r $voice_directory/builds/$timestamp/* $voice_directory/builds_grapheme/$timestamp
+
 # This is needed to accommodate for the language-specific feature set
 cp festival/clunits/mcep.desc festival/clunits/mcep.desc-backup
 cp festival/clunits/mceptraj.desc festival/clunits/mceptraj.desc-backup
@@ -61,7 +65,3 @@ mv festival/clunits/mcep.desc-backup festival/clunits/mcep.desc
 mv festival/clunits/mceptraj.desc-backup festival/clunits/mceptraj.desc
 mv festival/dur/etc/dur.feats-backup festival/dur/etc/dur.feats
 mv festival/dur/etc/statedur.feats-backup festival/dur/etc/statedur.feats
-
-# Create directory for grapheme build
-mkdir -p $voice_directory/builds_grapheme/$timestamp
-cd $voice_directory && cp -r $voice_directory/builds/$timestamp/* $voice_directory/builds_grapheme/$timestamp
