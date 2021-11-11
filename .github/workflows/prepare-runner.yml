@@ -65,6 +65,11 @@ jobs:
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 2000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_alfur
+  convert-grapheme-alfur:
+    runs-on: self-hosted
+    needs: build-alfur
+    timeout-minutes: 1200
+    steps:
       - name: 'Convert Alfur to .flitevox'
         run: |
           docker exec voice_builder ./docker_scripts/convert_grapheme_to_flite.sh /usr/local/src/voice_alfur
@@ -106,6 +111,11 @@ jobs:
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 2000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_dilja
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_dilja
+  convert-grapheme-dilja:
+    runs-on: self-hosted
+    needs: build-dilja
+    timeout-minutes: 1200
+    steps:
       - name: 'Convert Dilja to .flitevox'
         run: |
           docker exec voice_builder ./docker_scripts/convert_grapheme_to_flite.sh /usr/local/src/voice_dilja
