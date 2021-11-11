@@ -31,19 +31,6 @@ jobs:
             -v flite:/flite \
             lvl-us-is-train:latest \
             bash -c "tail -f /dev/null"
-  get-training-data:
-    runs-on: self-hosted
-    needs: setup
-    steps:
-      - name: Check if alfur corpus volume contains data
-        id: check_alfur_corpus
-        run: |
-          output=$(docker exec voice_builder bash -c "cd /usr/local/src/voice_alfur && ls")
-          echo "::set-output name=alfur_volume_contents::$output"
-      - name: Download talromur corpus if corpus volumes are empty
-        if: 
-        run: 
-
   prepare-voice-dirs:
     runs-on: self-hosted
     needs: setup
