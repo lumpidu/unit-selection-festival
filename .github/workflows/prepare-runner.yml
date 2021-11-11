@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: 'Train Alfur'
         run: |
-          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 5000
+          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 2000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_alfur
       - name: 'Convert Alfur to .flitevox'
@@ -103,7 +103,7 @@ jobs:
     steps:
       - name: 'Train Dilja'
         run: |
-          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 5000
+          docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 2000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_dilja
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_dilja
       - name: 'Convert Dilja to .flitevox'
