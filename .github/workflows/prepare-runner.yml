@@ -31,7 +31,7 @@ jobs:
             -v flite:/flite \
             lvl-us-is-train:latest \
             bash -c "tail -f /dev/null"
-  setup:
+  dependencies:
     runs-on: self-hosted
     needs: setup
     steps:
@@ -50,7 +50,7 @@ jobs:
           docker exec voice_builder ./docker_scripts/download_data.sh /usr/local/src/ext/data dilja
   prepare-voice-dirs:
     runs-on: self-hosted
-    needs: setup
+    needs: dependencies
     steps:
       - name: Set up voice dirs
         run: |
