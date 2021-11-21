@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Get g2p
         run: |
-          docker exec voice_builder bash -c "if [ -d /app/fairseq_g2p ]; then exit 0; fi && cd /app && git clone https://github.com/grammatek/g2p-lstm.git fairseq_g2p"
+          docker exec voice_builder bash -c "if [ -d /app/fairseq_g2p ]; then cd /app/fairseq_g2p; git pull; else cd /app && git clone https://github.com/grammatek/g2p-lstm.git fairseq_g2p; fi"
       - name: Get SPTK
         run: |
           docker exec voice_builder bash -c "./docker_scripts/install_sptk.sh"
