@@ -31,6 +31,23 @@ jobs:
             -v flite:/flite \
             lvl-us-is-train:latest \
             bash -c "tail -f /dev/null"
+  setup:
+    runs-on: self-hosted
+    needs: setup
+    steps:
+      - name: Get g2p
+        run: |
+          docker exec voice_builder bash -c "[ ! -d /app/fairseq_g2p ] && cd /app && git clone https://github.com/grammatek/g2p-lstm.git fairseq_g2p"
+      - name: Get SPTK
+        run: |
+          docker exec voice_builder bash -c "[ ! -d /usr/local/src/SPTK-3.6 ] && ./docker_scripts/install_sptk.sh"
+      - name: Get Flite
+        run: |
+          docker exec voice_builder bash -c "[ ! -d /flite/.git ] && git clone https://github.com/grammatek/Flite.git /flite && cd /flite && ./configure && make"
+      - name: Download data
+        run: |
+          docker exec voice_builder ./docker_scripts/download_data.sh /usr/local/src/ext/data alfur
+          docker exec voice_builder ./docker_scripts/download_data.sh /usr/local/src/ext/data dilja
   prepare-voice-dirs:
     runs-on: self-hosted
     needs: setup

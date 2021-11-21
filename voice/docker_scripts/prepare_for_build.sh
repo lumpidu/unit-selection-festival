@@ -1,9 +1,9 @@
 #!/bin/bash
-set -eo pipefail
+set -euxo pipefail
 
 voice_directory=$1 # e.g. /usr/local/src/voice_alfur
 
-
+voice_id=`basename $voice_directory`
 
 cd $voice_directory/builds
 # Find the most recent build dir - grep pattern matches timestamp, tail picks most recent entry
@@ -13,7 +13,8 @@ cd $timestamp
 FESTVOXDIR=/usr/local/src/festvox
 
 # Make some dirs we need
-$FESTVOXDIR/src/general/make_dirs
+$FESTVOXDIR/src/general/make_dirs || echo "make_dirs exit code: $?"
+
 DATADIR=$2
 NUM_UTTS=${4:-1000}
 # Set up the prompts that we will train on.
@@ -33,7 +34,7 @@ head -n $NUM_UTTS txt.nonum.data > etc/txt.done.data
 python3 normalize.py $DATADIR/index.tsv "-" | grep -o "[^ ]*" | sort | uniq | tail -n+2 > vocabulary.txt
 
 
-G2P_MODEL_DIR=/app/fairseq_g2p python3 f_g2p.py --model $3 --apply vocabulary.txt > lexicon.txt
+G2P_MODEL_DIR="/app/fairseq_g2p/version_20.11" python3 f_g2p.py --model $3 --apply vocabulary.txt > lexicon.txt
 
 # TODO: NOTE this might not be needed anymore since x-sampa already are ascii
 # readable phonemes
@@ -48,7 +49,14 @@ bin/add_noise etc/txt.done.data
 
 # Create directory for grapheme build
 mkdir -p $voice_directory/builds_grapheme/$timestamp
-cp -r $voice_directory/builds/$timestamp/* $voice_directory/builds_grapheme/$timestamp
+cd $voice_directory/builds_grapheme/$timestamp
+$FESTVOXDIR/src/clustergen/setup_cg lvl is $voice_id 
+cp -p $voice_directory/builds/$timestamp/wav/*.wav recording/
+cp -p $voice_directory/builds/$timestamp/etc/txt.done.data etc/
+./bin/get_wavs recording/*.wav
+./bin/prune_silence wav/*.wav
+
+cd $voice_directory/builds/$timestamp
 
 # This is needed to accommodate for the language-specific feature set
 cp festival/clunits/mcep.desc festival/clunits/mcep.desc-backup
