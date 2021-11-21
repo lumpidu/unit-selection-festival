@@ -25,7 +25,7 @@ $FESTVOXDIR/src/grapheme/make_cg_grapheme
 # ./bin/do_clustergen parallel f0
 ./bin/do_clustergen parallel mcep_sptk
 # ./bin/do_clustergen parallel mcep
-./bin/do_clustergen parallel combine_coeffs
+./bin/do_clustergen parallel combine_coeffs_v
 # # Build the models
 ./bin/traintest etc/txt.done.data
 ./bin/do_clustergen parallel cluster etc/txt.done.data.train
