@@ -59,7 +59,7 @@ jobs:
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_alfur
       - name: 'Collect test utterances'
-        uses: actions/upload_artifact@v2
+        uses: actions/upload-artifact@v2
         with:
           name: test-utterances
           path: outputs/grapheme/*.wav
