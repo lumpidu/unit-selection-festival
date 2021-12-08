@@ -58,11 +58,12 @@ jobs:
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 2000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_alfur
-      - name: 'Collect test utterances'
+      - name: 'Collect test utterances for Alfur'
         uses: actions/upload-artifact@v2
         with:
-          name: test-utterances
-          path: outputs/grapheme/*.wav
+          name: test-utterances-alfur
+          path: |
+            outputs/voice_alfur/grapheme/*.wav
   convert-grapheme-alfur:
     runs-on: self-hosted
     needs: build-alfur
@@ -109,9 +110,12 @@ jobs:
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 2000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_dilja
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_dilja
-      - name: 'Collect test utterances for grapheme voice'
+      - name: 'Collect test utterances for Dilja'
         uses: actions/upload-artifact@v2
-        path: 
+        with:
+          name: test-utterances-dilja
+          path: |
+            outputs/voice_alfur/grapheme/*.wav
   convert-grapheme-dilja:
     runs-on: self-hosted
     needs: build-dilja
