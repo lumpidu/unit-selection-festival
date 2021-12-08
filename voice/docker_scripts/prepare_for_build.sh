@@ -36,6 +36,8 @@ python3 normalize.py $DATADIR/index.tsv "-" | grep -o "[^ ]*" | sort | uniq | ta
 
 G2P_MODEL_DIR="/app/fairseq_g2p/version_20.11" python3 f_g2p.py --model $3 --apply vocabulary.txt > lexicon.txt
 
+python phonemize_dict.py etc/txt.done.data ./lexicon.txt ./sampa_ipa_single.tsv etc/txt.done.data.phn
+
 # TODO: NOTE this might not be needed anymore since x-sampa already are ascii
 # readable phonemes
 # Create a compiled lexicon from text lexicon
@@ -52,7 +54,7 @@ mkdir -p $voice_directory/builds_grapheme/$timestamp
 cd $voice_directory/builds_grapheme/$timestamp
 $FESTVOXDIR/src/clustergen/setup_cg lvl is $voice_id 
 cp -p $voice_directory/builds/$timestamp/wav/*.wav recording/
-cp -p $voice_directory/builds/$timestamp/etc/txt.done.data etc/
+cp -p $voice_directory/builds/$timestamp/etc/txt.done.data.phn etc/txt.done.data
 ./bin/get_wavs recording/*.wav
 ./bin/prune_silence wav/*.wav
 

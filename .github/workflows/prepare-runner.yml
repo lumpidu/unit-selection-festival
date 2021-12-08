@@ -17,41 +17,30 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           docker build . --tag lvl-us-is-train -f train.Dockerfile
+          if [ ! -d outputs ]; then mkdir outputs; fi
       - name: 'Spin up the container'
         run: |
           cd $GITHUB_WORKSPACE
           docker run -d \
             --name voice_builder \
             -v speech-corpora:/usr/local/src/ext/data \
-            -v g2p-lstm:/app/fairseq_g2p \
             -v voice-alfur:/usr/local/src/voice_alfur \
             -v voice-dilja:/usr/local/src/voice_dilja \
-            -v tts-samples:/outputs \
+            -v $GITHUB_WORKSPACE/outputs:/outputs \
             -v $GITHUB_WORKSPACE/voice:/usr/local/src/voice \
-            -v flite:/flite \
             lvl-us-is-train:latest \
             bash -c "tail -f /dev/null"
   dependencies:
     runs-on: self-hosted
     needs: setup
     steps:
-      - name: Get g2p
+      - name: Update g2p
         run: |
-          docker exec voice_builder bash -c "if [ -d /app/fairseq_g2p ]; then cd /app/fairseq_g2p; git pull; else cd /app && git clone https://github.com/grammatek/g2p-lstm.git fairseq_g2p; fi"
-      - name: Get SPTK
-        run: |
-          docker exec voice_builder bash -c "./docker_scripts/install_sptk.sh"
-      - name: Get Flite
-        run: |
-          docker exec voice_builder bash -c "if [ -d /flite/.git ]; then exit 0; fi && git clone https://github.com/grammatek/Flite.git /flite && cd /flite && ./configure && make"
+          docker exec voice_builder bash -c "if [ -d /app/fairseq_g2p ]; then cd /app/fairseq_g2p; git pull; else exit 1; fi"
       - name: Download data
         run: |
           docker exec voice_builder ./docker_scripts/download_data.sh /usr/local/src/ext/data alfur
           docker exec voice_builder ./docker_scripts/download_data.sh /usr/local/src/ext/data dilja
-  prepare-voice-dirs:
-    runs-on: self-hosted
-    needs: dependencies
-    steps:
       - name: Set up voice dirs
         run: |
           docker exec voice_builder ./docker_scripts/setup_voices.sh /usr/local/src/voice_alfur
@@ -60,7 +49,7 @@ jobs:
   build-alfur:
     # The type of runner that the job will run on
     runs-on: self-hosted
-    needs: prepare-voice-dirs
+    needs: dependencies
     timeout-minutes: 1200
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -69,6 +58,11 @@ jobs:
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_alfur /usr/local/src/ext/data/alfur standard 2000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_alfur
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_alfur
+      - name: 'Collect test utterances'
+        uses: actions/upload_artifact@v2
+        with:
+          name: test-utterances
+          path: outputs/grapheme/*.wav
   convert-grapheme-alfur:
     runs-on: self-hosted
     needs: build-alfur
@@ -107,7 +101,7 @@ jobs:
           docker exec voice_builder ./docker_scripts/convert_clunits_to_flite.sh /usr/local/src/voice_alfur
   build-dilja:
     runs-on: self-hosted
-    needs: prepare-voice-dirs
+    needs: dependencies
     timeout-minutes: 1200
     steps:
       - name: 'Train Dilja'
@@ -115,6 +109,9 @@ jobs:
           docker exec voice_builder ./docker_scripts/prepare_for_build.sh /usr/local/src/voice_dilja /usr/local/src/ext/data/dilja standard 2000
           docker exec voice_builder ./docker_scripts/build_cg_and_clunits_voice.sh /usr/local/src/voice_dilja
           docker exec voice_builder ./docker_scripts/build_grapheme_voice.sh /usr/local/src/voice_dilja
+      - name: 'Collect test utterances for grapheme voice'
+        uses: actions/upload-artifact@v2
+        path: 
   convert-grapheme-dilja:
     runs-on: self-hosted
     needs: build-dilja

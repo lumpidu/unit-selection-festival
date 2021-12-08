@@ -46,9 +46,24 @@ RUN curl -L https://github.com/grammatek/festival/archive/refs/tags/2.5.2-pre1.t
     curl -L https://github.com/grammatek/festvox/archive/refs/tags/2.8.3-pre1.tar.gz | \
     tar xz --no-same-owner --no-same-permissions --strip-components=1 -C festvox
 
+# Setup Flite
+RUN cd /usr/local/src && git clone https://github.com/grammatek/Flite.git flite && cd flite && ./configure && make
+
 ENV ESTDIR /usr/local/src/speech_tools
 ENV FESTVOXDIR /usr/local/src/festvox
-ENV SPTKDIR /usr/local
+ENV SPTKDIR /usr/local/src/SPTK
+ENV FLITEDIR /usr/local/src/flite
+
+# Get SPTK
+RUN cd /usr/local/src && \ 
+    wget http://festvox.org/packed/SPTK-3.6.tar.gz && \
+    tar zxvf SPTK-3.6.tar.gz && \
+    mkdir SPTK && \
+    patch -p0 <festvox/src/clustergen/SPTK-3.6.patch && \
+    cd SPTK-3.6 && \
+    ./configure --prefix=$SPTKDIR && \
+    make && \
+    make install
 
 ADD ./ext /usr/local/src/ext
 
@@ -71,6 +86,12 @@ RUN pip3 install numpy \
     && pip3 install fairseq
 
 ENV G2P_MODEL_DIR=/app/fairseq_g2p/
+
+# Get G2P model
+RUN mkdir /app && cd /app && git clone https://github.com/grammatek/g2p-lstm.git fairseq_g2p
+
+# Include voice directory
+ADD ./voice /usr/local/src/voice
 
 WORKDIR /usr/local/src/voice
 # ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
