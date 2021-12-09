@@ -11,7 +11,7 @@ newest=`ls -ltr | grep -P "\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}"  | awk '{print$9
 cd $newest
 
 
-export FLITEDIR=/flite
+export FLITEDIR=/usr/local/src/flite
 $FLITEDIR/bin/setup_flite
 
 ./bin/build_flite lpc
