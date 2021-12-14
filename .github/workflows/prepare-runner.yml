@@ -72,6 +72,12 @@ jobs:
       - name: 'Convert Alfur to .flitevox'
         run: |
           docker exec voice_builder ./docker_scripts/convert_grapheme_to_flite.sh /usr/local/src/voice_alfur
+      - name: 'Collect .flitevox model for Alfur'
+        uses: actions/upload-artifact@v2
+        with:
+          name: flitevox-model-alfur
+          path: |
+            outputs/voice_alfur/grapheme/*.flitevox
   finish-clunits-alfur:
     runs-on: self-hosted
     needs: build-alfur
@@ -115,7 +121,7 @@ jobs:
         with:
           name: test-utterances-dilja
           path: |
-            outputs/voice_alfur/grapheme/*.wav
+            outputs/voice_dilja/grapheme/*.wav
   convert-grapheme-dilja:
     runs-on: self-hosted
     needs: build-dilja
@@ -124,6 +130,12 @@ jobs:
       - name: 'Convert Dilja to .flitevox'
         run: |
           docker exec voice_builder ./docker_scripts/convert_grapheme_to_flite.sh /usr/local/src/voice_dilja
+      - name: 'Collect .flitevox model for Dilja'
+        uses: actions/upload-artifact@v2
+        with:
+          name: flitevox-model-dilja
+          path: |
+            outputs/voice_dilja/grapheme/*.flitevox
   finish-clunits-dilja:
     runs-on: self-hosted
     needs: build-dilja
