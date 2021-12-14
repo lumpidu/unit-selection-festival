@@ -170,4 +170,6 @@ jobs:
     if: always()
     steps:
       - name: 'Remove the container once work is complete'
-        run: docker rm -f voice_builder
+        run: |
+          docker exec voice_builder rm -rf /outputs/*
+          docker rm -f voice_builder
