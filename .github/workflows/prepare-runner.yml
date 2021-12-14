@@ -171,5 +171,5 @@ jobs:
     steps:
       - name: 'Remove the container once work is complete'
         run: |
-          docker exec voice_builder rm -rf /outputs/*
+          docker run -v ./outputs:/outputs ubuntu rm -rf /outputs/*
           docker rm -f voice_builder
