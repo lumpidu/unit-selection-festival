@@ -1,0 +1,11 @@
+test-001	halló, ég kann að tala íslensku
+test-002	alma segir að það sé fátítt að menn smitist aftur en dæmi eru þó um það
+test-003	Nei
+test-004	Já
+test-005	jæja
+test-006	ég missti aðeins einbeitinguna þegar ég sá að pabbi var farinn að toga í hálsmálið á peysunni sinni
+test-007	því er að vísu auðsvarað
+test-008	þetta er bara eins og í austurríki sko þetta verður ekkert betra en þetta
+test-009	einhverjir hefðu einhvern tíma sagt að þarna væri verið að reka erindi skuldakónga
+test-010	sjö íslendingar voru í dag úrskurðaðir í áframhaldandi fjögurra vikna gæsluvarðhald í héraðsdómi kaupmannahafnar
+test-011	önnur mál eru ekki á dagskrá í dag
